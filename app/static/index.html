@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pakcoy Vision: Analisis Fase Pertumbuhan Pakcoy</title>
+    <meta
+      name="description"
+      content="Aplikasi web pipeline YOLOv11-seg, OpenCV, dan klasifikasi fase untuk membaca fase pertumbuhan pakcoy hidroponik dari satu foto."
+    />
+    <meta name="theme-color" content="#f4f6ef" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f3d28'/%3E%3Cpath d='M45 17c-14 1-24 9-24 21 0 4 1 7 3 10 3-10 10-17 21-21-8 5-14 12-17 22 4 1 8 0 11-2 9-6 11-18 6-30Z' fill='%23c9f06a'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/static/styles.css?v=20261110c" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Lewati ke konten utama</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#main" aria-label="Pakcoy Vision, kembali ke atas">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" role="presentation">
+              <path
+                d="M36.5 9.5C21 10.5 10 20 10 32.5c0 3.2.8 6 2.3 8.4C15.5 29.6 23.6 20.8 36.5 15.8c-10 5.9-17.5 15.6-20.6 28.2 4.7.9 9.3-.6 12.9-3.5 8.7-7 10.6-19.4 7.7-31Z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+          <span class="brand-name">Pakcoy<span>Vision</span></span>
+        </a>
+
+        <nav class="main-nav" aria-label="Navigasi utama">
+          <a href="#analisis">Analisis</a>
+        </nav>
+
+        <div class="header-status status-demo" id="headerStatus" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">Memuat status…</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <h1>Baca fase pertumbuhan <em>pakcoy</em> dari satu foto.</h1>
+            <p class="hero-lede">
+              Segmentasi instance daun dengan YOLOv11-seg, pengukuran bentuk dengan
+              OpenCV, lalu klasifikasi fase Penyemaian, Vegetatif, atau Siap Panen,
+              lengkap dengan estimasi usia dan saran budidaya.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#analisis">
+                Mulai analisis
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            </div>
+            <dl class="hero-stats">
+              <div><dt>Model segmen</dt><dd id="heroModel">-</dd></div>
+              <div><dt>mAP50 mask (val)</dt><dd id="heroMap">-</dd></div>
+              <div><dt>Kelas daun</dt><dd id="heroClasses">-</dd></div>
+            </dl>
+          </div>
+
+          <div class="hero-visual" aria-hidden="true">
+            <div class="visual-card">
+              <svg class="leaf-scan" viewBox="0 0 480 480" role="presentation">
+                <defs>
+                  <linearGradient id="leafGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#9add8f" />
+                    <stop offset="0.55" stop-color="#4caf6d" />
+                    <stop offset="1" stop-color="#17603d" />
+                  </linearGradient>
+                </defs>
+                <rect width="480" height="480" rx="38" fill="#eef5e7" />
+                <circle cx="252" cy="232" r="154" fill="#dcecd4" opacity="0.75" />
+                <g class="leaf-shape">
+                  <path
+                    d="M247 372c-4-77 2-137 18-184 15-45 40-74 73-92-8 32-12 58-11 82 2 41-8 80-30 111-16 22-33 50-50 83Z"
+                    fill="url(#leafGradient)"
+                  />
+                  <path d="M249 369c10-67 31-121 68-165" fill="none" stroke="#0d3b26" stroke-opacity="0.55" stroke-width="4" stroke-linecap="round" />
+                  <path d="M270 310c-16-7-28-18-35-33M286 272c-14-6-24-15-31-28M303 236c-12-5-22-13-28-24M318 199c-10-4-18-11-24-20" fill="none" stroke="#0d3b26" stroke-opacity="0.34" stroke-width="3" stroke-linecap="round" />
+                </g>
+                <rect x="126" y="118" width="238" height="268" rx="10" fill="none" stroke="#0f3d28" stroke-opacity="0.36" stroke-width="1.5" stroke-dasharray="7 8" />
+                <path d="M126 150V118h32M332 118h32v32M364 354v32h-32M158 386h-32v-32" fill="none" stroke="#0f3d28" stroke-opacity="0.7" stroke-width="3" stroke-linecap="round" />
+                <g class="scan-track">
+                  <path class="scan-line" d="M132 242h226" stroke="#c9f06a" stroke-width="2" stroke-opacity="0.95" />
+                  <circle cx="303" cy="236" r="5" fill="#c9f06a" stroke="#0f3d28" stroke-width="2" />
+                </g>
+              </svg>
+              <div class="floating-chip chip-a"><span class="chip-dot"></span> mask instance daun</div>
+              <div class="floating-chip chip-b">minAreaRect · panjang × lebar</div>
+              <div class="floating-chip chip-c"><span class="chip-dot chip-dot-amber"></span> fase vegetatif</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="analisis">
+        <div class="container">
+          <div class="section-head">
+            <h2>Analisis satu foto tanaman</h2>
+            <p>
+              Unggah foto atau coba salah satu contoh dari dataset. Seluruh proses
+              berjalan lokal di server ini, dan foto tidak dikirim ke layanan pihak
+              ketiga.
+            </p>
+          </div>
+
+          <div class="workspace-grid">
+            <aside class="card upload-card">
+              <div class="card-head">
+                <h3>1. Pilih foto</h3>
+                <span class="badge badge-soft" id="engineBadge">Mode demo</span>
+              </div>
+
+              <input id="fileInput" name="file" type="file" accept="image/jpeg,image/png,image/webp" autocomplete="off" hidden />
+              <button id="dropzone" class="dropzone" type="button" aria-describedby="dropHint">
+                <span id="dropEmpty" class="drop-empty">
+                  <span class="drop-icon" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" role="presentation">
+                      <path d="M24 33V13m0 0-8 8m8-8 8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M10 31v3a4 4 0 0 0 4 4h20a4 4 0 0 0 4-4v-3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <span class="drop-title">Tarik foto ke sini</span>
+                  <span class="drop-sub">atau klik untuk memilih · JPG, PNG, WEBP · maks 20 MB</span>
+                </span>
+                <span id="dropPreview" class="drop-preview" hidden>
+                  <img id="previewImage" alt="" width="640" height="480" />
+                  <span class="preview-change">Ganti foto</span>
+                </span>
+              </button>
+              <p id="dropHint" class="hint">
+                Gunakan foto satu tanaman dengan latar kontras dan pencahayaan merata.
+                Kamu juga bisa menempel gambar dari clipboard.
+              </p>
+
+              <div class="sample-block">
+                <div class="sample-head">
+                  <span>Contoh cepat</span>
+                  <span class="hint">dari dataset skripsi</span>
+                </div>
+                <div id="sampleList" class="sample-list" role="group" aria-label="Contoh foto pakcoy"></div>
+              </div>
+
+              <details class="settings">
+                <summary>Pengaturan analisis</summary>
+                <div class="settings-grid">
+                  <label class="field">
+                    <span>Mesin segmentasi</span>
+                    <select id="engineSelect" name="engine">
+                      <option value="auto">Otomatis (YOLO → fallback)</option>
+                      <option value="yolo">YOLOv11-seg (model terlatih)</option>
+                      <option value="classic">Segmentasi klasik</option>
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span>
+                      Confidence threshold
+                      <output id="confValue" for="confInput">0,25</output>
+                    </span>
+                    <input id="confInput" name="conf" type="range" min="0.05" max="0.95" step="0.05" value="0.25" />
+                  </label>
+
+                  <label class="field">
+                    <span>Kalibrasi piksel/cm <span class="muted">opsional</span></span>
+                    <input
+                      id="calibrationInput"
+                      name="pixels_per_cm"
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      inputmode="decimal"
+                      placeholder="mis. 38,5"
+                      autocomplete="off"
+                    />
+                  </label>
+                </div>
+                <p class="hint" id="calibrationHint">
+                  Kosongkan jika belum dikalibrasi, hasil akan tampil dalam piksel.
+                  Isi hanya setelah mengukur dengan penggaris. Model klasifikasi
+                  tetap memakai fitur piksel agar konsisten dengan data latih.
+                </p>
+              </details>
+
+              <button id="analyzeBtn" class="btn btn-primary btn-block" type="button" disabled>
+                <span class="btn-label">Analisis foto</span>
+                <span class="spinner" hidden aria-hidden="true"></span>
+              </button>
+              <p id="uploadError" class="field-error" role="alert" tabindex="-1" hidden></p>
+            </aside>
+
+            <section class="card result-card" id="resultCard" aria-live="polite" aria-busy="false">
+              <div id="resultEmpty" class="result-empty">
+                <span class="empty-art" aria-hidden="true">
+                  <svg viewBox="0 0 120 120" role="presentation">
+                    <circle cx="60" cy="60" r="54" fill="#eef5e7" />
+                    <path d="M82 34c-24 2-40 14-40 32 0 6 1 11 4 16 5-16 16-27 34-33-13 8-23 20-27 36 7 1 14-1 19-5 14-10 17-29 10-46Z" fill="#1f7a4d" />
+                    <circle cx="60" cy="60" r="47" fill="none" stroke="#1f7a4d" stroke-opacity="0.18" stroke-width="1.5" stroke-dasharray="5 7" />
+                  </svg>
+                </span>
+                <h3>Hasil analisis muncul di sini</h3>
+                <p>Pilih foto pakcoy untuk melihat fase, fitur daun, dan rekomendasi budidaya.</p>
+                <ul class="empty-list">
+                  <li>Mask instance per daun</li>
+                  <li>7 fitur agregat tanaman</li>
+                  <li>Probabilitas 3 kelas fase</li>
+                </ul>
+              </div>
+
+              <div id="resultLoading" class="result-loading" hidden>
+                <span class="spinner spinner-lg" aria-hidden="true"></span>
+                <h3>Menganalisis foto…</h3>
+                <p id="loadingStage" class="loading-stage">Preprocessing citra</p>
+                <div class="loading-track" aria-hidden="true"><span id="loadingBar"></span></div>
+                <p class="hint">Pipeline berjalan di server. Inferensi pertama bisa 5–10 detik pada CPU.</p>
+              </div>
+
+              <div id="resultSummary" class="result-summary" hidden>
+                <div class="summary-top">
+                  <div class="phase-block">
+                    <span class="phase-kicker">Prediksi fase</span>
+                    <div class="phase-name-row">
+                      <span id="phaseDot" class="phase-dot" aria-hidden="true"></span>
+                      <h3 id="phaseName">-</h3>
+                    </div>
+                    <p id="phaseAge" class="phase-age">-</p>
+                    <p id="phaseNote" class="phase-note">-</p>
+                  </div>
+                  <div class="confidence-ring" id="confidenceRing">
+                    <svg viewBox="0 0 120 120" role="img" aria-labelledby="confidenceTitle">
+                      <title id="confidenceTitle">Keyakinan prediksi</title>
+                      <circle class="ring-bg" cx="60" cy="60" r="52" />
+                      <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" />
+                    </svg>
+                    <div class="ring-label">
+                      <strong id="confidenceValue">0%</strong>
+                      <span>keyakinan</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="prob-list" id="probList" role="group" aria-label="Probabilitas tiap fase"></div>
+
+                <div class="summary-meta">
+                  <span id="modelBadge" class="badge">-</span>
+                  <span id="engineMeta" class="meta-text">-</span>
+                  <span id="timeMeta" class="meta-text">-</span>
+                </div>
+
+                <div class="summary-actions">
+                  <a class="btn btn-ghost btn-sm" href="#detail">Lihat detail</a>
+                  <button id="downloadJsonBtn" class="btn btn-ghost btn-sm" type="button">Unduh JSON</button>
+                </div>
+
+                <div id="summaryWarnings" class="warning-list"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="section detail-section" id="detail" hidden>
+        <div class="container">
+          <div class="section-head compact">
+            <h2>Dari mask daun ke rekomendasi</h2>
+            <p id="detailCaption">-</p>
+          </div>
+
+          <div class="pipeline-trace" id="pipelineTrace" aria-label="Durasi tiap tahap pipeline"></div>
+
+          <div class="detail-grid">
+            <article class="card visual-card">
+              <div class="card-head">
+                <h3>Visualisasi</h3>
+                <div class="tabs" role="tablist" aria-label="Pilih visualisasi">
+                  <button role="tab" id="tab-original" class="tab" aria-controls="visualPanel" aria-selected="false" tabindex="-1" data-view="original" type="button">Asli</button>
+                  <button role="tab" id="tab-preprocessed" class="tab" aria-controls="visualPanel" aria-selected="false" tabindex="-1" data-view="preprocessed" type="button">Preprocessing</button>
+                  <button role="tab" id="tab-annotated" class="tab" aria-controls="visualPanel" aria-selected="true" tabindex="0" data-view="annotated" type="button">Deteksi</button>
+                </div>
+              </div>
+              <div id="visualPanel" class="visual-panel" role="tabpanel" aria-labelledby="tab-annotated">
+                <img id="resultImage" alt="Hasil deteksi daun pakcoy" width="640" height="480" />
+              </div>
+              <p id="imageCaption" class="hint">-</p>
+            </article>
+
+            <article class="card aggregate-card">
+              <div class="card-head">
+                <h3>Fitur agregat tanaman</h3>
+                <span class="badge badge-soft" id="unitBadge">piksel</span>
+              </div>
+              <div class="agg-grid" id="aggGrid"></div>
+              <p class="hint">Tujuh fitur ini menjadi masukan model klasifikasi fase.</p>
+            </article>
+          </div>
+
+          <article class="card table-card">
+            <div class="card-head">
+              <h3>Tabel fitur daun</h3>
+              <div class="card-actions">
+                <span class="badge badge-soft" id="leafCountBadge">0 daun</span>
+                <button id="downloadCsvBtn" class="btn btn-ghost btn-sm" type="button">Unduh CSV</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table id="leafTable">
+                <caption class="sr-only">Fitur geometri setiap instance daun</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Daun</th>
+                    <th scope="col">Panjang <span class="unit" id="thLengthUnit">px</span></th>
+                    <th scope="col">Lebar <span class="unit" id="thWidthUnit">px</span></th>
+                    <th scope="col">Luas <span class="unit" id="thAreaUnit">px²</span></th>
+                    <th scope="col">Rasio L/W</th>
+                    <th scope="col">Confidence</th>
+                  </tr>
+                </thead>
+                <tbody id="leafTableBody"></tbody>
+              </table>
+            </div>
+            <p class="hint table-note" id="leafTableNote" hidden></p>
+            <div class="mask-gallery" id="maskGallery" role="group" aria-label="Mask instance daun"></div>
+          </article>
+
+          <article class="card rec-card">
+            <div class="card-head">
+              <h3>Saran untuk petani</h3>
+              <span class="badge" id="recPhaseBadge">-</span>
+            </div>
+            <p id="recSummary" class="rec-summary">-</p>
+            <ul id="recList" class="rec-list"></ul>
+            <p id="recNote" class="hint"></p>
+          </article>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>
+          <span class="footer-brand">Pakcoy Vision</span>
+          <p class="hint">Segmentasi YOLOv11-seg, pengukuran OpenCV, dan saran budidaya pakcoy hidroponik.</p>
+        </div>
+        <nav aria-label="Navigasi footer">
+          <a href="#analisis">Analisis</a>
+          <a href="/docs" target="_blank" rel="noreferrer">API Docs<span class="sr-only"> (buka di tab baru)</span></a>
+        </nav>
+      </div>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="/static/app.js?v=20261110c" defer></script>
+  </body>
+</html>

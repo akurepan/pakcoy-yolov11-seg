@@ -1,0 +1,13 @@
+# Konteks build untuk Hugging Face Spaces.
+# models/best.pt TIDAK dikecualikan: bobot harus ikut ke dalam image.
+.venv/
+.git/
+__pycache__/
+*.py[cod]
+dataset/
+hasil/
+tests/
+.pytest_cache/
+*.log
+.DS_Store
+Thumbs.db

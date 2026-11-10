@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Model weights & artefak besar (letakkan manual di models/)
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.tflite
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.keras
+dataset/*.pt
+
+# Hasil eksperimen / unggahan sementara
+outputs/
+uploads/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

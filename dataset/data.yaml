@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['daun-pakcoy']
+
+roboflow:
+  workspace: refans-workspace-3y7zf
+  project: daun-pakcoy-kahqu
+  version: 1
+  license: Private
+  url: https://app.roboflow.com/refans-workspace-3y7zf/daun-pakcoy-kahqu/1
