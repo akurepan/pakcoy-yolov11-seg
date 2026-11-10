@@ -1,0 +1,12 @@
+# Jangan ikutkan ke bundel fungsi Vercel: batasnya 250 MB.
+.venv
+.git
+__pycache__
+*.py[cod]
+dataset
+hasil
+tests
+*.ipynb
+*.log
+# Bobot YOLO tidak dipakai di Vercel (tanpa ultralytics/torch).
+models/*.pt

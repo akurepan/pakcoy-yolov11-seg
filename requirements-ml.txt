@@ -1,0 +1,7 @@
+# Dependensi tambahan untuk menjalankan YOLOv11-seg (mode utama).
+# Ultralytics akan menarik torch dan torchvision yang sesuai.
+# Instal setelah requirements.txt:
+#   .venv\Scripts\python -m pip install -r requirements-ml.txt
+-r requirements.txt
+scikit-learn==1.9.1
+ultralytics==8.4.204

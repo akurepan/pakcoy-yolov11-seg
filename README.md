@@ -37,10 +37,22 @@ run.bat
 .venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-## Deploy sebagai demo publik (Hugging Face Spaces)
+## Deploy publik
 
-Vercel tidak dapat menjalankan model ini: `torch` berukuran ~1 GB dan batas
-fungsi serverless Vercel 250 MB. Gunakan Docker.
+Ada dua jalur, dengan konsekuensi berbeda.
+
+### Vercel — hanya mode segmentasi klasik
+
+Batas fungsi serverless Vercel 250 MB, sedangkan `torch` saja ~1 GB. Karena itu
+`api/index.py` + `vercel.json` hanya mengekspos pipeline klasik: `models/*.pt`
+dikecualikan lewat `.vercelignore` dan `requirements.txt` sengaja tidak memuat
+`ultralytics`. Halaman akan menampilkan badge **Mode demo**. Cocok untuk
+memastikan antarmuka berjalan, bukan untuk menampilkan hasil model penelitian.
+
+Tidak ada konfigurasi tambahan di dashboard: Root Directory `./`, Application
+Preset **FastAPI**, tanpa environment variable.
+
+### Hugging Face Spaces — mode YOLOv11-seg
 
 1. Buat Space baru di <https://huggingface.co/new-space> — SDK **Docker**,
    visibility **Public**, nama misalnya `pakcoy-vision`.

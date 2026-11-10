@@ -1,0 +1,9 @@
+# Dependensi inti Pakcoy Vision (mode segmentasi klasik + antarmuka web).
+# Versi di bawah adalah versi yang diuji pada Python 3.12.
+# Catatan: memakai wheel headless karena aplikasi tidak pernah memakai GUI
+# OpenCV, dan image server (Vercel/Docker) tidak menyediakan libGL.
+fastapi==0.162.1
+uvicorn==0.54.0
+python-multipart==0.0.33
+numpy==2.5.4
+opencv-python-headless==5.0.0.93
