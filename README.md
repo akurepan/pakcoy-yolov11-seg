@@ -15,10 +15,28 @@ Aplikasi menjalankan pipeline penelitian secara utuh: preprocessing citra →
 segmentasi instance daun (YOLOv11-seg) → pengukuran bentuk dengan OpenCV →
 agregasi fitur → klasifikasi fase → estimasi usia → rekomendasi budidaya.
 
-Antarmuka berbahasa Indonesia. Dapat dijalankan lokal, atau sebagai demo publik
-lewat Docker (lihat `Dockerfile`) tanpa mengubah kode aplikasi.
+Antarmuka berbahasa Indonesia. Dapat dijalankan lokal, atau disiapkan sebagai
+demo publik lewat Docker (lihat `Dockerfile`) tanpa mengubah kode aplikasi.
+
+## Status
+
+- **Kode dan bobot model** tersedia publik di
+  <https://github.com/akurepan/pakcoy-yolov11-seg>. `models/best.pt` ikut
+  repositori, jadi hasil clone langsung memakai YOLOv11-seg.
+- **Demo publik** belum aktif. Konfigurasi Vercel dan Docker sudah ada, tetapi
+  belum ada deployment yang bisa dibuka. Langkah lengkapnya ada di
+  [`DEPLOY.md`](DEPLOY.md).
+- **Klasifikasi fase** masih memakai aturan heuristik (demo). Artefak model
+  klasifikasi belum tersedia; lihat [`models/README.md`](models/README.md).
 
 ## Menjalankan aplikasi
+
+Ambil repositori (bobot model sudah termasuk):
+
+```bat
+git clone https://github.com/akurepan/pakcoy-yolov11-seg.git
+cd pakcoy-yolov11-seg
+```
 
 Prasyarat: **Python 3.12** dan Windows (skrip `run.bat`). Di Linux/macOS gunakan
 perintah `python` yang setara.
@@ -37,9 +55,13 @@ run.bat
 .venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
+Setelah `requirements-ml.txt` terpasang, `/api/status` melaporkan
+`yolo.available = true` dan halaman memakai model penelitian, bukan mode demo.
+
 ## Deploy publik
 
-Ada dua jalur, dengan konsekuensi berbeda.
+Status: belum ada deployment yang aktif. Pilih salah satu jalur di bawah; detail
+perintah, verifikasi, dan pemecahan masalah ada di [`DEPLOY.md`](DEPLOY.md).
 
 ### Vercel — hanya mode segmentasi klasik
 
@@ -50,7 +72,9 @@ dikecualikan lewat `.vercelignore` dan `requirements.txt` sengaja tidak memuat
 memastikan antarmuka berjalan, bukan untuk menampilkan hasil model penelitian.
 
 Tidak ada konfigurasi tambahan di dashboard: Root Directory `./`, Application
-Preset **FastAPI**, tanpa environment variable.
+Preset **FastAPI**, tanpa environment variable. Deploy dengan `npx vercel --prod`,
+lalu pastikan `/api/health` dan aset `/static/*` merespons `200` (checklist di
+[`DEPLOY.md`](DEPLOY.md)).
 
 ### Hugging Face Spaces — mode YOLOv11-seg
 
@@ -59,9 +83,6 @@ Preset **FastAPI**, tanpa environment variable.
 2. Push repositori (token Hugging Face dipakai sebagai password):
 
 ```bat
-git add -f models/best.pt
-git add Dockerfile .dockerignore README.md
-git commit -m "Deploy: Dockerfile untuk Hugging Face Spaces"
 git remote add hf https://huggingface.co/spaces/<username>/pakcoy-vision
 git push hf main
 ```
@@ -69,9 +90,9 @@ git push hf main
 3. Tunggu build selesai. Aplikasi tersedia di
    `https://<username>-pakcoy-vision.hf.space`.
 
-`models/best.pt` di-ignore oleh `.gitignore`, jadi wajib `git add -f` agar bobot
-ikut terkirim. Space gratis akan tidur setelah lama tidak diakses; kunjungan
-pertama butuh 30–60 detik untuk bangun.
+`models/best.pt` sudah dilacak git, jadi tidak perlu `git add -f` lagi.
+Space gratis akan tidur setelah lama tidak diakses; kunjungan pertama butuh
+30–60 detik untuk bangun.
 
 ## Dua mode operasi
 
@@ -137,8 +158,10 @@ app/
     app.js            unggah, analisis, render hasil, unduh CSV/JSON
     samples/          contoh foto hari ke-5, 20, 30, 42
     assets/           diagram alur penelitian
-models/               bobot YOLO & artefak klasifikasi (lihat README di dalam)
+models/               best.pt (disertakan) & artefak klasifikasi (lihat README)
+hasil/                artefak training, metrik, notebook (lihat README di dalam)
 tests/                uji asap pipeline (stdlib unittest)
+DEPLOY.md             panduan deploy Vercel / Hugging Face / Docker
 ```
 
 ## Pengujian
@@ -150,7 +173,23 @@ Uji asap memakai `unittest` bawaan Python, tanpa dependensi tambahan:
 ```
 
 Uji mencakup preprocessing, segmentasi klasik, pengukuran, agregasi, prediksi,
-kalibrasi satuan, dan rekomendasi tanpa fase.
+kalibrasi satuan, dan rekomendasi tanpa fase. Dua uji yang memerlukan bobot akan
+di-skip bila `models/best.pt` tidak ada; di repositori ini bobot sudah disertakan
+sehingga seluruh uji berjalan. Pesan Ultralytics di stderr bisa membuat
+PowerShell menampilkan teks merah; selama ringkasan berakhir `OK`, pengujian
+lulus.
+
+## Artefak dan metrik
+
+| Berkas | Isi |
+| --- | --- |
+| `models/best.pt` | Bobot YOLOv11n-seg yang dipakai aplikasi (satu kelas `daun-pakcoy`). |
+| `hasil/pakcoy_artifacts.zip` | `best.pt`, `last.pt`, `data.yaml`, dan satu gambar prediksi test. |
+| `hasil/checkpoint-skripsi-pakcoy.ipynb` | Notebook training dan evaluasi di Kaggle. |
+
+Ringkasan metrik validasi (dibaca langsung dari checkpoint): mAP50 box 0,956 dan
+mAP50 mask 0,953. Metrik testing, rincian isi zip, dan catatan provenance ada di
+[`hasil/README.md`](hasil/README.md).
 
 ## API
 

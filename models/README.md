@@ -4,6 +4,11 @@ Letakkan artefak hasil training di folder ini. Aplikasi mendeteksi berkas secara
 otomatis, termasuk saat bobot diganti ketika server sedang berjalan (hot reload),
 jadi tidak perlu mengubah kode.
 
+`models/best.pt` **sudah disertakan di repositori** (±6 MB) supaya hasil clone
+langsung menjalankan mode YOLOv11-seg setelah `requirements-ml.txt` terpasang.
+Checkpoint percobaan lain tetap di-ignore oleh `.gitignore` dan hanya ada di
+komputer lokal.
+
 ## 1. Model segmentasi (wajib untuk mode YOLO)
 
 | Berkas | Keterangan |
