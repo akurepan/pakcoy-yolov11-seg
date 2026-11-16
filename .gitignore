@@ -15,6 +15,12 @@ models/*.pth
 models/*.onnx
 models/*.tflite
 models/*.pkl
+# Artefak classifier final ikut repo supaya deploy memakai model yang sama.
+!models/best_rf.pkl
+!models/best_mlp_sklearn.pkl
+!models/label_encoder.pkl
+!models/feature_scaler.pkl
+!models/pakcoy_mlp.tflite
 models/*.joblib
 models/*.h5
 models/*.keras
