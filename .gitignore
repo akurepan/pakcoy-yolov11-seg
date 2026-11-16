@@ -6,8 +6,11 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Model weights & artefak besar (letakkan manual di models/)
+# Model weights & artefak besar.
+# `best.pt` sengaja ikut repositori supaya hasil clone langsung menjalankan
+# mode YOLOv11-seg; checkpoint percobaan lain tetap lokal.
 models/*.pt
+!models/best.pt
 models/*.pth
 models/*.onnx
 models/*.tflite
