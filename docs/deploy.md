@@ -109,6 +109,12 @@ Yang perlu dicek setelah deploy:
 Classifier fase tidak aktif di Vercel karena `requirements.txt` tidak memuat
 `scikit-learn`. Itu pilihan sadar untuk menjaga ukuran fungsi.
 
+> **Batas unggahan Vercel 4,5 MB.** Body request di atas ±4,5 MB ditolak Vercel
+> sebelum fungsi berjalan, dengan respons `413 FUNCTION_PAYLOAD_TOO_LARGE`
+> berupa teks biasa (bukan JSON), sehingga halaman hanya menampilkan status
+> error generik. Batas 20 MB di `app/config.py` hanya berlaku di HF/Docker.
+> Bila memakai Vercel, perkecil foto di sisi browser sebelum mengirim.
+
 ## 3. Docker / VPS
 
 ```bat
