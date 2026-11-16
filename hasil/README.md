@@ -71,6 +71,12 @@ evaluasi dijalankan pada versi Ultralytics yang berbeda.
 - **Artefak klasifikasi fase** (`pakcoy_mlp.tflite`, `feature_scaler.pkl`,
   `label_encoder.pkl`, `best_rf.pkl`) belum ada. Prediksi fase memakai aturan
   heuristik dan selalu diberi label "Aturan heuristik (demo)".
+- **Deteksi YOLO pada foto close-up ekstrem.** `app/static/samples/day-42.jpg`
+  tidak menghasilkan instance daun bahkan pada `conf=0.05`, sehingga
+  `engine=auto` turun ke segmentasi klasik (hasil fase tetap "Siap Panen").
+  Penyebabnya domain gap: foto memenuhi bingkai, daun saling menutup, dan latar
+  berbeda dari data latih. Menurunkan ambang tidak menolong; perbaikannya adalah
+  menambah data hari 35–45 dengan variasi jarak dan sudut.
 - Kurva PR dan confusion matrix dari zip lama hilang karena kompresinya rusak.
   Jangan membuat ulang kurva secara manual lalu menyajikannya sebagai keluaran
   training; latih ulang atau ekspor dari notebook bila kurva itu dibutuhkan

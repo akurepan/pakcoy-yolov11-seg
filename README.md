@@ -173,7 +173,8 @@ Uji asap memakai `unittest` bawaan Python, tanpa dependensi tambahan:
 ```
 
 Uji mencakup preprocessing, segmentasi klasik, pengukuran, agregasi, prediksi,
-kalibrasi satuan, dan rekomendasi tanpa fase. Dua uji yang memerlukan bobot akan
+kalibrasi satuan, rekomendasi tanpa fase, serta integritas artefak (zip dan
+kesamaan bobot `best.pt`). Dua uji yang memerlukan bobot akan
 di-skip bila `models/best.pt` tidak ada; di repositori ini bobot sudah disertakan
 sehingga seluruh uji berjalan. Pesan Ultralytics di stderr bisa membuat
 PowerShell menampilkan teks merah; selama ringkasan berakhir `OK`, pengujian
